@@ -7,7 +7,6 @@ const deviceID = Math.random()*1000
 // --- CONNECTING--------------------------------------
 client.on('connect', function() {
   console.log('connected!');
-  client.subscribe(locTopic);
   client.subscribe(backTopic)
   client.subscribe(deviceTopic)
 });
@@ -32,7 +31,7 @@ client.on('message', function(topic, message)
     onePixelDo(true, hue, 100, 80)
   }
 
-  if(topic == deviceTopic){
+  if(topic == deviceTopic){ 
     let msg = JSON.parse(message)
     onRecievedDevice(msg)
     console.log("Device recieved " + msg);
