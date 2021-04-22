@@ -13,11 +13,12 @@
     
     
   </head>
-  <body>
+  <body onload="watchLocation()">
     <div id="mapid" style="width: 600px; height: 400px; opacity:80%;"></div>
     <button id="sat_Button" onclick="sendRandomBackground()">sendRandomBackground</button>
-    <button id="nej_Button" onclick="watchLocation()">Watch location</button>
     <button id="nej_Button" onclick="getArea()">Get area</button>
+    <button id="nej_Button" onclick="createPoly()">Create poly</button>
+    <button id="nej_Button" onclick="getLocation()">Send current Location</button>
     
 
   </body>

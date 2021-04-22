@@ -9,6 +9,7 @@ client.on('connect', function() {
   console.log('connected!');
   client.subscribe(locTopic);
   client.subscribe(backTopic)
+  client.subscribe(deviceTopic)
 });
 
 // --- VARIABLES --------------------
@@ -18,19 +19,23 @@ client.on('connect', function() {
 function sendMessage(topic, msg)
 {
   client.publish(topic, msg);
-  getArea();
+  console.log("Sent on topic: "+topic + " message: " + msg);
 }
 
 // --- RECEIVING MESSAGE --------------------------------------
 client.on('message', function(topic, message) 
 {
-  if (topic == locTopic){
-    let unpMsg= JSON.parse(msg)
-  } 
+ 
   if(topic == backTopic){
     let msg = message.toString();
     let hue = mappingValue(msg, 1, 3, 0, 95);
     onePixelDo(true, hue, 100, 80)
+  }
+
+  if(topic == deviceTopic){
+    let msg = JSON.parse(message)
+    onRecievedDevice(msg)
+    console.log("Device recieved " + msg);
   }
 
 });

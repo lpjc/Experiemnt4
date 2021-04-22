@@ -3,8 +3,11 @@
 //--------------- functions for admins---------------
 
 var mymap = L.map('mapid').setView([51.505, -0.09], 13);
+var myId = Math.floor(Math.random() * 10000);
+var polygonLayer = L.layerGroup().addTo(mymap); 
+console.log(myId);
 
-  //adding "tile" (the graphic of a map)
+//adding "tile" (the graphic of a map)
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
     maxZoom: 18,
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
@@ -14,15 +17,44 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     zoomOffset: -1
 }).addTo(mymap);
 
-  // create polygon, should be made of devices positions
-var polyPoints = [  //coords
-  [51.509, -0.05],
-  [51.509, -0.06],
-  [51.51, -0.057]]
+//________________:function to create polygon of active devices:________________
 
-var polygon = L.polygon(polyPoints, {color: 'red'}); // create the polygon
+var obj1 = {id:1, lat:51.509, lng:-0.05};
+var obj2 = {id:2, lat:51.509, lng:-0.06};
+var obj3 = {id:3, lat:51.51, lng:-0.057};
 
-polygon.addTo(mymap); // add to tileset
+var deviceArray = []
+var polygon;
+
+function onRecievedDevice(newDevice){
+  var isNew = true;
+  deviceArray.forEach(oldDevices => {
+    if (oldDevices.id == newDevice.id){
+      isNew = false;
+      oldDevices.lat = newDevice.lat
+      oldDevices.lng = newDevice.lng
+    }
+  });
+  if (isNew){
+    deviceArray.push(newDevice)
+  }
+  createPoly();
+}
+
+// create polygon, should be made of devices positions
+
+function createPoly(){
+  let polyPoints =[]
+
+  polygonLayer.clearLayers();
+
+  deviceArray.forEach(device => { 
+    var latlng = L.latLng(device.lat, device.lng)
+    polyPoints.push(latlng)
+  });
+  polygon = L.polygon(polyPoints, {color: 'blue'});
+  polygon.addTo(polygonLayer);
+}
 
 function getArea(){
 
@@ -32,6 +64,7 @@ function getArea(){
   var readableArea = L.GeometryUtil.readableArea(area, true);
   console.log(readableArea + " is the area"); // might be in "ha": 1 ha = 10,000 square metres.
 }
+//________________::____________________
 
 function sendBackground(){
   // send the value of background based on area of polygon
@@ -45,9 +78,11 @@ function sendRandomBackground(){ // for testing purp
 
 //--------------- functions for device -----------------
 
-function getLocation() {
+function getLocation() { 
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(doStuff);
+    navigator.geolocation.getCurrentPosition(sendPosition);
+    //sendPosition(navigator.geolocation);
+    console.log("Getting Location");
   } else {
     x.innerHTML = "Geolocation is not supported by this browser.";
   }
@@ -55,21 +90,17 @@ function getLocation() {
 
 function watchLocation() {
   if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(doStuff);
+    navigator.geolocation.watchPosition(sendPosition);
   } else {
     x.innerHTML = "Geolocation is not supported by this browser.";
   }
 }
 
-function broadcastLoc(lat, lng){  // sende device ID + lat & lng i et array
-
-  let IDLatLng=[deviceID, lat, lng]
-  let msg = JSON.stringify(IDLatLng);
-  sendMessage(locTopic, msg)
-}
-
-function doStuff(position){
-  console.log(position.coords.latitude);
+function sendPosition(position){
+  const lat = position.coords.latitude;
+  const lng = position.coords.longitude;
+  sendMessage(deviceTopic,JSON.stringify({"id": myId,"lat":lat,"lng":lng}));
+//  console.log("Sent message: "+ "id" + myId+"lat"+lat+"lng"+lng );
 }
 
 //------------ Functions for all---------------
